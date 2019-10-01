@@ -29,21 +29,35 @@ class Scrape:
 
         self.cabecalho['Número'] = findall(
             'sso=[0-9]*', self.url)[0].replace('sso=', '')
+
+        # getCorpo é chamado para preencher o juiz que é extraido a depender to tipo do doc
+        self.getCorpo()
         return self.cabecalho
 
     def getCorpo(self):
         sentenca = self.page_soup.find_all(
             'p', attrs={'class': 'western', 'align': 'center'})
         if len(sentenca) > 0 and sentenca[0].text == 'SENTENÇA':
-            self.getSetencaTipo1()
+            return self.__getSetencaTipo1()
         else:
-            self.getSetencaTipo2()
+            return self.__getSetencaTipo2()
+
+    def __getSetencaTipo1(self):
+        self.corpo['Sentenca'] = ''
+
+        paragrafos = self.page_soup.find_all(
+            'p', attrs={'style': 'margin-bottom: 0cm;'})
+
+        for index, paragrafo in enumerate(paragrafos):
+            if index > 1:
+                self.corpo['Sentenca'] += paragrafo.text
+
+        self.cabecalho['Juiz'] = self.page_soup.find_all(
+            'td', attrs={'align': 'center'})[0].text
+
         return self.corpo
 
-    def getSetencaTipo1(self):
-        print('Not implemented yet.')
-
-    def getSetencaTipo2(self):
+    def __getSetencaTipo2(self):
         self.cabecalho['Juiz'] = self.page_soup.find_all(
             'p', attrs={'style': 'font-style: normal; margin-bottom: 0.28cm;', 'align': 'center'})[0].text
 
